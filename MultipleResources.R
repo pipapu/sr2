@@ -1,12 +1,6 @@
 # In this file we are setting up the functions for
 # - the dynamics of the resources
 # - the contribution of the resources to the encounter rate
-# - the senescence mortality
-# and provide a function for setting up Asta's model with
-# benthos and algae.
-#
-# This file is sourced by the file run.R that runs the 
-# climate change scenarios
 
 # library(tidyverse)
 # library(mizerExperimental)
@@ -52,9 +46,9 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
   
   #  params <- newMultispeciesParams(NS_species_params)
   
-  initial_n_pps <- matrix(params@initial_n_pp/nResourceSpectra,
-                          ncol = length(params@initial_n_pp),
-                          nrow = nResourceSpectra )
+  initial_n_pps <- t(matrix(params@initial_n_pp/nResourceSpectra,
+                            ncol = nResourceSpectra,
+                            nrow = length(params@initial_n_pp)))
   
   component_params <- params@resource_params
   component_params$kappa <- 
@@ -65,12 +59,16 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
   component_params$interaction_resources <-
     matrix(exp(rnorm(S*nResourceSpectra,-resource_sigma^2/2,resource_sigma)),
            nrow=S, ncol=nResourceSpectra)
-  
+
   component_params$capacity <- 
-    params@cc_pp / nResourceSpectra
+    t(matrix(params@cc_pp / nResourceSpectra,
+             ncol = nResourceSpectra,
+             nrow = length(params@initial_n_pp)))
   
   component_params$rate <-
-    params@rr_pp #/ nResourceSpectra ## ??? really need to divide?
+    t(matrix(params@rr_pp,
+             ncol = nResourceSpectra,
+             nrow = length(params@initial_n_pp)))
   
   params <- setComponent(params = params, component = "n_pps",
                          initial_value = initial_n_pps,
@@ -87,9 +85,12 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
 
 params <- newMultispeciesParams(NS_species_params,inter)
 out1 <- project(params)
+plotBiomass(out1)
 
 
 params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = 2)
 out2 <- project(params_npps)
+plotBiomass(out2)
+
 
 plot(out2)
