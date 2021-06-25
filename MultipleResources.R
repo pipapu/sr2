@@ -66,9 +66,13 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
              nrow = length(params@initial_n_pp)))
   
   component_params$rate <-
+<<<<<<< HEAD
     t(matrix(params@rr_pp,
              ncol = nResourceSpectra,
              nrow = length(params@initial_n_pp)))
+=======
+    params@rr_pp 
+>>>>>>> b17a6f871d27aeb127d0fe93dd87faceb51267d1
   
   params <- setComponent(params = params, component = "n_pps",
                          initial_value = initial_n_pps,
@@ -85,12 +89,18 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
 
 params <- newMultispeciesParams(NS_species_params,inter)
 out1 <- project(params)
+<<<<<<< HEAD
 plotBiomass(out1)
+=======
+plot(out1)
+>>>>>>> b17a6f871d27aeb127d0fe93dd87faceb51267d1
 
-
-params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = 2)
+params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = 1)
 out2 <- project(params_npps)
+<<<<<<< HEAD
 plotBiomass(out2)
 
 
+=======
+>>>>>>> b17a6f871d27aeb127d0fe93dd87faceb51267d1
 plot(out2)
