@@ -1,12 +1,6 @@
 # In this file we are setting up the functions for
 # - the dynamics of the resources
 # - the contribution of the resources to the encounter rate
-# - the senescence mortality
-# and provide a function for setting up Asta's model with
-# benthos and algae.
-#
-# This file is sourced by the file run.R that runs the 
-# climate change scenarios
 
 # library(tidyverse)
 # library(mizerExperimental)
@@ -34,7 +28,7 @@ background_encounter <- function(params, n, n_pp, n_other, ...) {
 
 #### the following needs to be fixed to align with parametrisation and algorithm in resource_semichemostat
 background_semichemostats <- function(params, n_other, rates, dt, component,
-                                     ...) {
+                                      ...) {
   c <- params@other_params[[component]]
   # name of interaction parameter for this component in species_params
   # interaction_component <- paste0("interaction_", component)
@@ -43,7 +37,6 @@ background_semichemostats <- function(params, n_other, rates, dt, component,
   mur <- c$rate + mort
   n_pps_steady <- c$rate * c$capacity / mur
   new_n_pps <- n_pps_steady + (n_other[[component]] - n_pps_steady) * exp(-mur * dt)
-  stop("debug")
   return(new_n_pps)
 }
 
@@ -59,7 +52,7 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
                           ncol = length(params@initial_n_pp),
                           nrow = nResourceSpectra,
                           byrow = T)
-  
+
   component_params <- params@resource_params
   component_params$kappa <- 
     component_params$kappa/nResourceSpectra
@@ -71,10 +64,14 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
            nrow=S, ncol=nResourceSpectra)
   
   component_params$capacity <- 
-    params@cc_pp / nResourceSpectra
+    t(matrix(params@cc_pp / nResourceSpectra,
+             ncol = nResourceSpectra,
+             nrow = length(params@initial_n_pp)))
   
   component_params$rate <-
-    params@rr_pp 
+    t(matrix(params@rr_pp,
+             ncol = nResourceSpectra,
+             nrow = length(params@initial_n_pp)))
   
   params <- setComponent(params = params, component = "n_pps",
                          initial_value = initial_n_pps,
@@ -89,11 +86,15 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
   params
 }
 
-# params <- newMultispeciesParams(NS_species_params,inter)
-# out1 <- project(params)
-# plot(out1)
 
-params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = 2)
+params <- newMultispeciesParams(NS_species_params,inter)
+out1 <- project(params)
+plotBiomass(out1)
+
+
+params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = 3)
 out2 <- project(params_npps)
-plot(out2)
+plotBiomass(out2)
 
+
+plot(out2)
