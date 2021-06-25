@@ -27,7 +27,7 @@ background_encounter <- function(params, n, n_pp, n_other, ...) {
 
 #### the following needs to be fixed to align with parametrisation and algorithm in resource_semichemostat
 background_semichemostats <- function(params, n_other, rates, dt, component,
-                                     ...) {
+                                      ...) {
   c <- params@other_params[[component]]
   # name of interaction parameter for this component in species_params
   # interaction_component <- paste0("interaction_", component)
@@ -59,20 +59,16 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
   component_params$interaction_resources <-
     matrix(exp(rnorm(S*nResourceSpectra,-resource_sigma^2/2,resource_sigma)),
            nrow=S, ncol=nResourceSpectra)
-
+  
   component_params$capacity <- 
     t(matrix(params@cc_pp / nResourceSpectra,
              ncol = nResourceSpectra,
              nrow = length(params@initial_n_pp)))
   
   component_params$rate <-
-<<<<<<< HEAD
     t(matrix(params@rr_pp,
              ncol = nResourceSpectra,
              nrow = length(params@initial_n_pp)))
-=======
-    params@rr_pp 
->>>>>>> b17a6f871d27aeb127d0fe93dd87faceb51267d1
   
   params <- setComponent(params = params, component = "n_pps",
                          initial_value = initial_n_pps,
@@ -89,18 +85,12 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
 
 params <- newMultispeciesParams(NS_species_params,inter)
 out1 <- project(params)
-<<<<<<< HEAD
 plotBiomass(out1)
-=======
-plot(out1)
->>>>>>> b17a6f871d27aeb127d0fe93dd87faceb51267d1
 
-params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = 1)
+
+params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = 2)
 out2 <- project(params_npps)
-<<<<<<< HEAD
 plotBiomass(out2)
 
 
-=======
->>>>>>> b17a6f871d27aeb127d0fe93dd87faceb51267d1
 plot(out2)
