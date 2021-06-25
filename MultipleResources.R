@@ -70,7 +70,7 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
     params@cc_pp / nResourceSpectra
   
   component_params$rate <-
-    params@rr_pp #/ nResourceSpectra ## ??? really need to divide?
+    params@rr_pp 
   
   params <- setComponent(params = params, component = "n_pps",
                          initial_value = initial_n_pps,
@@ -87,9 +87,8 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
 
 params <- newMultispeciesParams(NS_species_params,inter)
 out1 <- project(params)
+plot(out1)
 
-
-params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = 2)
+params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = 1)
 out2 <- project(params_npps)
-
 plot(out2)
