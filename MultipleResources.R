@@ -26,7 +26,8 @@ background_encounter <- function(params, n, n_pp, n_other, ...) {
   avail_energy <- avail_energy[, idx_sp, drop = FALSE]
   avail_energy[avail_energy < 1e-18] <- 0
   
-  params@search_vol * avail_energy
+  encounter <- params@search_vol * avail_energy
+  return(encounter)
 }
 
 # see also mizerPredMort, resource_semichemostat
@@ -40,8 +41,10 @@ background_semichemostats <- function(params, n_other, rates, dt, component,
   # interaction <- params@species_params[[interaction_component]]
   mort <- base::t(c$interaction_resources) %*% rates$pred_rate
   mur <- c$rate + mort
-  n_pps_steady <- c$rate * c$capacity / mur 
-  return(n_pps_steady + (n_other[[component]] - n_pps_steady) * exp(-mur * dt))
+  n_pps_steady <- c$rate * c$capacity / mur
+  new_n_pps <- n_pps_steady + (n_other[[component]] - n_pps_steady) * exp(-mur * dt)
+  stop("debug")
+  return(new_n_pps)
 }
 
 
@@ -54,7 +57,8 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
   
   initial_n_pps <- matrix(params@initial_n_pp/nResourceSpectra,
                           ncol = length(params@initial_n_pp),
-                          nrow = nResourceSpectra )
+                          nrow = nResourceSpectra,
+                          byrow = T)
   
   component_params <- params@resource_params
   component_params$kappa <- 
@@ -85,10 +89,11 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
   params
 }
 
-params <- newMultispeciesParams(NS_species_params,inter)
-out1 <- project(params)
-plot(out1)
+# params <- newMultispeciesParams(NS_species_params,inter)
+# out1 <- project(params)
+# plot(out1)
 
-params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = 1)
+params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = 2)
 out2 <- project(params_npps)
 plot(out2)
+
