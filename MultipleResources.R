@@ -212,7 +212,7 @@ library(RColorBrewer)
 coul <- colorRampPalette(brewer.pal(9, "Set1"))(ncol(BB_percentage))[sample.int(S,replace = F)]
 
 # Make a stacked barplot --> it will be in %!
-barplot(BB_percentage[,seq(1,ncol(BB_percentage),length.out = 30)],col = coul, border="white", xlab="group")
+barplot(BB_percentage[,seq(1,ncol(BB_percentage),length.out = 30)],col = coul, border="white", xlab="time", ylab="Percent biomass contribution")
 # Compare this e.g. with Fig. 10 here: http://axel.rossberg.net/paper/Shephard2012ICES-JMS_Fishing_drives_LSI.pdf
 
 ## Animation of spectra takes a while, but result is interesting!  Note that, contrary to what one might expect, variability at small sizes is larger than at intermediate sizes. 
