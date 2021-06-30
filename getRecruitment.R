@@ -28,7 +28,8 @@ getRecruitment <- function(params,
                            n = initialN(params),
                            n_pp = initialNResource(params),
                            n_other = initialNOther(params),
-                           t = 0) {
+                           t = 0,
+                           ...) {
   #assert_that(is(params, "MizerParams"))
   no_sp <- nrow(params@species_params)
   # Here we approximate the derivative of the maturity ogive numerically
