@@ -22,20 +22,22 @@ background_encounter <- function(params, n, n_pp, n_other, ...) {
 
 ### define this to extract diets of fish:
 background_encounter_component <- function(params, n, n_pp, n_other, component, ...) {
-  ### fix me: extract encounter with only one component of background spectrum
-  # n_pps_params <- params@other_params[["n_pps"]]
-  # idx_sp <- (length(params@w_full) - length(params@w) + 1):length(params@w_full)
-  # prey <- n_pps_params$interaction %*% n_other$n_pps
-  # prey[, idx_sp] <- prey[, idx_sp] + params@interaction %*% n
-  # prey <- sweep(prey, 2, params@w_full * params@dw_full, "*")
-  # avail_energy <- Re(base::t(mvfft(base::t(params@ft_pred_kernel_e) * 
-  #                                    mvfft(base::t(prey)),
-  #                                  inverse = TRUE))) / length(params@w_full)
-  # avail_energy <- avail_energy[, idx_sp, drop = FALSE]
-  # avail_energy[avail_energy < 1e-18] <- 0
-  # 
-  # encounter <- params@search_vol * avail_energy
-  # return(encounter)
+  if(substr(component,1,4) != "n_pp") stop("This is not an n_pp component.");
+  i <- as.integer(substr(component,5,nchar(component)))
+  if(i <= 0) stop("Problem with component indexing.")
+  n_pps_params <- params@other_params[["n_pps"]]
+  idx_sp <- (length(params@w_full) - length(params@w) + 1):length(params@w_full)
+  prey <- outer(n_pps_params$interaction[,i], n_other$n_pps[i,])
+  prey <- sweep(prey, 2, params@w_full * params@dw_full, "*")
+  avail_energy <- Re(base::t(mvfft(base::t(params@ft_pred_kernel_e) *
+                                     mvfft(base::t(prey)),
+                                   inverse = TRUE))) / length(params@w_full)
+  avail_energy <- avail_energy[, idx_sp, drop = FALSE]
+  avail_energy[avail_energy < 1e-18] <- 0
+
+  encounter <- params@search_vol * avail_energy
+
+  return(encounter)
 }
 
 # see also mizerPredMort, resource_semichemostat
@@ -54,6 +56,10 @@ background_semichemostats <- function(params, n_other, rates, dt, component,
   return(new_n_pps)
 }
 
+
+dummy_background_dynamics <- function(...){
+  return(0)
+}
 
 newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma=0) {
   
@@ -92,6 +98,12 @@ newMultiResourceParams <- function(sp, ..., nResourceSpectra = 1, resource_sigma
                          dynamics_fun =  "background_semichemostats",
                          component_params = component_params)
   
+  for(i in 1:nResourceSpectra){
+    params <- setComponent(params = params, component = paste0("n_pp",i),
+                           initial_value = 0,
+                           dynamics_fun = "dummy_background_dynamics",
+                           encounter_fun =  "background_encounter_component")
+  }
   
   
   # Include these extra resources in the encounter rate
@@ -109,16 +121,27 @@ params <- newMultispeciesParams(NS_species_params,inter)
 out1 <- project(params)
 plotBiomass(out1)
 
+## Generate diet partitioning function:
+params <- setInitialValues(params,out1)
+diets <- apply(getDiet(params,proportion = F),MARGIN = c(1,3),sum)
 
-nR <- 5
+
+nR <- 2
 
 params_npps <- newMultiResourceParams(NS_species_params,inter,nResourceSpectra = nR)
 out2 <- project(params_npps)
 plotBiomass(out2)
 
+## Generate diet partitioning function:
+params_npps <- setInitialValues(params_npps,out2)
+diets <- apply(getDiet(params_npps,proportion = F),MARGIN = c(1,3),sum)
+diets <- subset(diets, select=-c(get("Resource")))
+diet_props <- as.vector(diag(1/rowSums(diets)) %*% diets)
+plot(sort(diet_props/(1-diet_props),decreasing = T),seq_along(diet_props)/nrow(diets),log="xy",xlim=c(1e-2,1e2),ylim=c(0.05,20))
+ 
 ### Now an example with a large number or resource spectra and fish species
 
-nS <- 100  # you can make this arbitrarily large
+nS <- 20  # you can make this arbitrarily large
 nR <- 2*nS
 nu <- 0.6  # target diet partitioning exponent
 interaction_spread_sigma <- sqrt(2*log(nR+nS))/nu
